@@ -1,20 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@components/ui/popover";
+import {
+  FacebookIcon,
+  FacebookShareButton,
+  TwitterIcon,
+  TwitterShareButton,
+  WhatsappIcon,
+  WhatsappShareButton,
+} from "react-share";
 
 const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
   const { data: session } = useSession();
+  const [shareUrl, setShareUrl] = useState("");
   const pathName = usePathname();
   const router = useRouter();
-
   const [copied, setCopied] = useState("");
+  const [copiedLink, setCopiedLink] = useState("");
 
   const handleProfileClick = () => {
-    console.log(post);
-
     if (post.creator._id === session?.user.id) return router.push("/profile");
 
     router.push(`/profile/${post.creator._id}?name=${post.creator.username}`);
@@ -25,7 +37,14 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
     navigator.clipboard.writeText(post.prompt);
     setTimeout(() => setCopied(false), 3000);
   };
-
+  const handleShare = () => {
+    setShareUrl(`${window.location.origin}/prompt/${post._id}`);
+  };
+  const handleCopyLink = () => {
+    setCopied(shareUrl);
+    navigator.clipboard.writeText(shareUrl);
+    setTimeout(() => setCopied(false), 3000);
+  };
   return (
     <div className="prompt_card">
       <div className="flex justify-between items-start gap-5">
@@ -50,17 +69,53 @@ const PromptCard = ({ post, handleEdit, handleDelete, handleTagClick }) => {
             </p>
           </div>
         </div>
-
-        <div className="copy_btn" onClick={handleCopy}>
+        <Popover>
+          <PopoverTrigger>
+            <div className="copy_btn" onClick={handleShare}>
+              <Image
+                src="/assets/icons/share.svg"
+                alt="share_icon"
+                width={15}
+                height={15}
+              />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="flex items-center">
+              <div className="copy_btn me-2" onClick={handleCopyLink}>
+                <Image
+                  src={
+                    copied === shareUrl
+                      ? "/assets/icons/tick.svg"
+                      : "/assets/icons/copy.svg"
+                  }
+                  alt={copied === shareUrl ? "tick_icon" : "copy_icon"}
+                  width={20}
+                  height={20}
+                />
+              </div>
+              <FacebookShareButton url={shareUrl} className="me-2">
+                <FacebookIcon round size={20} />
+              </FacebookShareButton>
+              <WhatsappShareButton url={shareUrl} className="me-2">
+                <WhatsappIcon round size={20} />
+              </WhatsappShareButton>
+              <TwitterShareButton url={shareUrl} className="me-2">
+                <TwitterIcon round size={20} />
+              </TwitterShareButton>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <div className="copy_btn" onClick={handleCopyLink}>
           <Image
             src={
-              copied === post.prompt
+              shareUrl === post.prompt
                 ? "/assets/icons/tick.svg"
                 : "/assets/icons/copy.svg"
             }
             alt={copied === post.prompt ? "tick_icon" : "copy_icon"}
-            width={12}
-            height={12}
+            width={15}
+            height={15}
           />
         </div>
       </div>

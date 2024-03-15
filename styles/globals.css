@@ -39,7 +39,10 @@
   opacity: 0.4;
   filter: invert(1);
 }
-
+.share-popover {
+  background: #fafafa;
+  cursor: pointer;
+}
 .gradient {
   height: fit-content;
   z-index: 3;
